@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Security Risks</title>
+</head>
+<body>
+    <h1>Understanding OAuth Security Risks</h1>
+    <p>
+        OAuth is widely used for authentication and authorization on many popular platforms. While it provides a method for securely accessing user resources, it is not without its risks. This article aims to highlight some common vulnerabilities associated with OAuth and examine the notable Vercel breach that brought some of these risks to light.
+    </p>
+    <h2>Common OAuth Vulnerabilities</h2>
+    <ul>
+        <li><strong>Token Leakage:</strong> Access tokens are sensitive credentials that need to be secured. If they are leaked, unauthorized parties may gain access to users' resources.</li>
+        <li><strong>Redirect URI Manipulation:</strong> Attackers might exploit insecure redirect URIs to intercept authorization codes and tokens.</li>
+        <li><strong>Insufficient Token Expiration:</strong> Long-lived access tokens increase risk, as they can be exploited over time if compromised.</li>
+        <li><strong>Scope Creep:</strong> Improperly defined scopes may grant excessive access, leading to unauthorized actions on behalf of the user.</li>
+    </ul>
+    <h2>The Vercel Breach</h2>
+    <p>
+        In early 2023, Vercel experienced a security incident where attackers exploited a vulnerability in their OAuth implementation. The breach allowed unauthorized access to user accounts, leading to widespread concerns about the integrity of OAuth providers. Vercel has since implemented enhanced security measures to prevent similar incidents in the future.
+    </p>
+    <h2>Conclusion</h2>
+    <p>
+        As OAuth continues to evolve, it’s essential for developers and organizations to stay informed about potential risks and implement best practices to safeguard their applications. Awareness is key in mitigating OAuth-related vulnerabilities.
+    </p>
+</body>
+</html>
