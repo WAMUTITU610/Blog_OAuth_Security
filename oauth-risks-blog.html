@@ -1,29 +1,1060 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OAuth Security Risks</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your OAuth is Showing — The Hidden Door Hackers Love</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --accent: #ff4d6d;
+    --accent2: #ff8c42;
+    --accent3: #4dffb4;
+    --text: #e8e8f0;
+    --muted: #8888aa;
+    --border: #2a2a3a;
+    --warning: #ffd166;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* Animated noise grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,77,109,0.15) 0%, transparent 70%);
+  }
+
+  .hero::after {
+    content: 'OAUTH';
+    position: absolute;
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 280px;
+    color: rgba(255,77,109,0.04);
+    letter-spacing: 20px;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 9vw, 120px);
+    line-height: 0.92;
+    letter-spacing: 2px;
+    max-width: 900px;
+    margin-bottom: 32px;
+  }
+
+  .hero h1 span.red { color: var(--accent); }
+  .hero h1 span.orange { color: var(--accent2); }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 540px;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .hero-meta span { color: var(--accent3); }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+  }
+
+  .scroll-indicator::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* Layout */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  .container-wide {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* Sections */
+  section {
+    padding: 80px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1;
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    color: var(--text);
+  }
+
+  h2 .accent { color: var(--accent); }
+  h2 .orange { color: var(--accent2); }
+  h2 .green { color: var(--accent3); }
+
+  h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    margin: 40px 0 16px;
+    color: var(--text);
+  }
+
+  p { margin-bottom: 20px; color: var(--text); font-weight: 300; }
+  p:last-child { margin-bottom: 0; }
+
+  strong { color: var(--accent2); font-weight: 600; }
+  em { color: var(--accent3); font-style: italic; }
+
+  /* Pull quotes */
+  .pullquote {
+    border-left: 3px solid var(--accent);
+    padding: 20px 28px;
+    margin: 40px 0;
+    background: rgba(255,77,109,0.06);
+    border-radius: 0 8px 8px 0;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .pullquote .attribution {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 12px;
+    font-style: normal;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* Alert / callout boxes */
+  .callout {
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 32px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .callout::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+  }
+
+  .callout-red {
+    background: rgba(255,77,109,0.08);
+    border: 1px solid rgba(255,77,109,0.2);
+  }
+  .callout-red::before { background: var(--accent); }
+
+  .callout-orange {
+    background: rgba(255,140,66,0.08);
+    border: 1px solid rgba(255,140,66,0.2);
+  }
+  .callout-orange::before { background: var(--accent2); }
+
+  .callout-green {
+    background: rgba(77,255,180,0.06);
+    border: 1px solid rgba(77,255,180,0.2);
+  }
+  .callout-green::before { background: var(--accent3); }
+
+  .callout-yellow {
+    background: rgba(255,209,102,0.08);
+    border: 1px solid rgba(255,209,102,0.2);
+  }
+  .callout-yellow::before { background: var(--warning); }
+
+  .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .callout-red .callout-label { color: var(--accent); }
+  .callout-orange .callout-label { color: var(--accent2); }
+  .callout-green .callout-label { color: var(--accent3); }
+  .callout-yellow .callout-label { color: var(--warning); }
+
+  .callout p { margin-bottom: 0; font-size: 15px; }
+
+  /* Score badge */
+  .score-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 40px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .score-item {
+    text-align: center;
+    padding: 20px;
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .score-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .score-red { color: var(--accent); }
+  .score-orange { color: var(--accent2); }
+  .score-green { color: var(--accent3); }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    margin: 40px 0;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), var(--accent3));
+  }
+
+  .timeline-item {
+    padding-left: 60px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: 12px;
+    top: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timeline-dot::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .timeline-year {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .timeline-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .timeline-body {
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 0;
+  }
+
+  .timeline-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+
+  .badge-red { background: rgba(255,77,109,0.15); color: var(--accent); border: 1px solid rgba(255,77,109,0.3); }
+  .badge-orange { background: rgba(255,140,66,0.15); color: var(--accent2); border: 1px solid rgba(255,140,66,0.3); }
+  .badge-green { background: rgba(77,255,180,0.1); color: var(--accent3); border: 1px solid rgba(77,255,180,0.2); }
+  .badge-yellow { background: rgba(255,209,102,0.1); color: var(--warning); border: 1px solid rgba(255,209,102,0.2); }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+    margin: 24px 0;
+  }
+
+  .checklist li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .check-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(77,255,180,0.15);
+    border: 1px solid rgba(77,255,180,0.3);
+    color: var(--accent3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .check-title {
+    font-weight: 600;
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .check-desc {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* Big stat */
+  .big-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 40px 0;
+  }
+
+  .big-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .big-stat:hover { transform: translateY(-4px); }
+
+  .big-stat .number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--accent);
+    display: block;
+  }
+
+  .big-stat .label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    display: block;
+    font-weight: 300;
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent3);
+    margin: 24px 0;
+    overflow-x: auto;
+    line-height: 1.8;
+  }
+
+  .code-block .comment { color: var(--muted); }
+  .code-block .key { color: var(--accent2); }
+  .code-block .val { color: var(--accent3); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 20px 0;
+  }
+
+  /* Wide panel */
+  .wide-panel {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 0;
+    margin: 40px 0;
+  }
+
+  /* CTA / Final section */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(255,77,109,0.12) 0%, rgba(255,140,66,0.08) 50%, rgba(77,255,180,0.08) 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 60px 48px;
+    margin: 60px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '🔐';
+    position: absolute;
+    font-size: 200px;
+    opacity: 0.05;
+    top: -40px;
+    right: -40px;
+    line-height: 1;
+  }
+
+  .cta-section h2 {
+    font-size: clamp(32px, 5vw, 52px);
+    margin-bottom: 16px;
+  }
+
+  .cta-section p {
+    max-width: 500px;
+    margin: 0 auto 32px;
+    color: var(--muted);
+  }
+
+  /* Footer */
+  footer {
+    padding: 48px 32px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero h1 { animation: fadeUp 0.8s ease both; }
+  .hero-sub { animation: fadeUp 0.8s 0.15s ease both; }
+  .hero-meta { animation: fadeUp 0.8s 0.3s ease both; }
+  .hero-eyebrow { animation: fadeUp 0.8s 0.05s ease both; }
+
+  /* Lumma stealer highlight box */
+  .lumma-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,77,109,0.3);
+    border-radius: 16px;
+    padding: 36px;
+    margin: 40px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lumma-card::before {
+    content: '☣';
+    position: absolute;
+    right: 24px;
+    top: 16px;
+    font-size: 64px;
+    opacity: 0.08;
+  }
+
+  .lumma-card h3 {
+    margin-top: 0;
+    color: var(--accent);
+  }
+
+  /* Comparison table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 32px 0;
+    font-size: 14px;
+  }
+
+  .compare-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .compare-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 300;
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .compare-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .compare-table td:first-child {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .tag {
+    display: inline-block;
+    background: rgba(255,77,109,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(255,77,109,0.25);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .hero { padding: 60px 24px; }
+    .container { padding: 0 20px; }
+    .score-card { grid-template-columns: 1fr; }
+    .cta-section { padding: 40px 24px; }
+    .compare-table { font-size: 12px; }
+    .compare-table td, .compare-table th { padding: 10px 10px; }
+  }
+</style>
 </head>
 <body>
-    <h1>Understanding OAuth Security Risks</h1>
-    <p>
-        OAuth is widely used for authentication and authorization on many popular platforms. While it provides a method for securely accessing user resources, it is not without its risks. This article aims to highlight some common vulnerabilities associated with OAuth and examine the notable Vercel breach that brought some of these risks to light.
-    </p>
-    <h2>Common OAuth Vulnerabilities</h2>
-    <ul>
-        <li><strong>Token Leakage:</strong> Access tokens are sensitive credentials that need to be secured. If they are leaked, unauthorized parties may gain access to users' resources.</li>
-        <li><strong>Redirect URI Manipulation:</strong> Attackers might exploit insecure redirect URIs to intercept authorization codes and tokens.</li>
-        <li><strong>Insufficient Token Expiration:</strong> Long-lived access tokens increase risk, as they can be exploited over time if compromised.</li>
-        <li><strong>Scope Creep:</strong> Improperly defined scopes may grant excessive access, leading to unauthorized actions on behalf of the user.</li>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Security Deep Dive — April 2026</div>
+    <h1>Your <span class="red">OAuth</span> is<br><span class="orange">Showing.</span></h1>
+    <p class="hero-sub">How a Roblox cheat script brought down one of the internet's most trusted dev platforms — and why your company might be next.</p>
+    <div class="hero-meta">
+      <div>By <span>Mark Wamutitu</span></div>
+      <div>Reading time: <span>~14 min</span></div>
+      <div>Threat level: <span style="color:var(--accent);">CRITICAL</span></div>
+    </div>
+  </div>
+  <div class="scroll-indicator">scroll</div>
+</section>
+
+<!-- INTRO -->
+<section>
+  <div class="container">
+    <div class="section-label">The Setup</div>
+    <h2>Let's Talk About <span class="accent">Digital Keys</span></h2>
+    <p>Imagine you give a spare key to your house to a friend. Nice, trustworthy friend. Very responsible. Now imagine that friend gives a spare of your spare to someone they met on the internet who said they needed it to "water your plants." And that person? Yeah, they robbed you.</p>
+    <p>That's OAuth in 2026. And it just happened — spectacularly — to Vercel.</p>
+    <p>But before we get into finger-pointing and dramatic music, let's be very clear: <strong>this wasn't Vercel's fault alone.</strong> This is a systemic, industry-wide problem that's been quietly festering since 2017, and most organizations today are just one third-party AI chatbot away from the same nightmare.</p>
+    <p>Grab a coffee. This one's a ride. ☕</p>
+  </div>
+</section>
+
+<!-- VERCEL BREACH -->
+<section>
+  <div class="container">
+    <div class="section-label">The Incident — April 19, 2026</div>
+    <h2>The <span class="accent">Vercel</span> Breach, Explained for non-Techie </h2>
+    <p>Vercel is the platform powering millions of web apps — the people behind Next.js, serverless deployments, and the smooth CI/CD pipelines that make developers feel productive at 2am. They're trusted by some of the biggest names in tech.</p>
+    <p>On April 19, 2026, a hacker going by "ShinyHunters" showed up on BreachForums claiming to have Vercel's databases, source code, API keys, GitHub tokens, and internal access — <strong>priced at a cool $2 million.</strong></p>
+    <p>Vercel confirmed the breach the same day. And when they traced the attack chain back to its origin, they found something almost comically mundane at the root of it.</p>
+
+    <div class="callout callout-orange">
+      <div class="callout-label">⚠️ The Attack Chain — Simplified</div>
+      <p>A <strong>Context.ai employee</strong> downloaded what they thought were Roblox game exploit scripts. It was actually <strong>Lumma Stealer</strong> malware. The malware stole their work credentials. The attacker used those credentials to get into Context.ai's AWS systems. From there, they grabbed <strong>OAuth tokens</strong> that Context.ai held on behalf of its users — including a Vercel employee who had connected Context.ai to their Google Workspace account. That one OAuth token was the key to Vercel's kingdom.</p>
+    </div>
+
+    <p>One employee. One shady download. One authorized app. One OAuth token. That's all it took to compromise one of the most heavily used developer platforms on the internet.</p>
+
+    <div class="pullquote">
+      "The attacker used that access to take over the employee's Vercel Google Workspace account, which enabled them to gain access to some Vercel environments and environment variables that were not marked as 'sensitive.'"
+      <span class="attribution">— Vercel Security Bulletin, April 19, 2026</span>
+    </div>
+
+    <p>What did the attacker get? API keys, database URLs, internal tokens — anything stored in Vercel environment variables that hadn't been explicitly flagged as "sensitive" (and therefore encrypted). They also walked away with a file containing <strong>580 Vercel employee records</strong> and screenshots of internal dashboards.</p>
+    <p>What they <em>didn't</em> get: Next.js source code, npm packages, or anything in encrypted "sensitive" variables. Small mercies.</p>
+  </div>
+</section>
+
+<!-- LUMMA STEALER -->
+<section>
+  <div class="container">
+    <div class="section-label">The Weapon</div>
+    <h2>Meet <span class="accent">Lumma Stealer</span> — The Malware That Started It All</h2>
+    <p>Before we talk about OAuth, we need to talk about the tool that kicked off this whole chain of chaos: Lumma Stealer. Because you'll be hearing its name a lot.</p>
+
+    <div class="lumma-card">
+      <h3>☣ Lumma Stealer — Threat Profile</h3>
+      <p><strong>Born:</strong> August 2022, on Russian-speaking dark web forums.</p>
+      <p><strong>Creator:</strong> A threat actor known as "Shamel" — yes, he literally named his malware after his own alias — who operates out of Russia. He built an entire brand around it, complete with a bird logo, a tagline ("making money with us is just as easy"), and tiered pricing like he was running a SaaS startup. Which, terrifyingly, he kind of was.</p>
+      <p><strong>What it does:</strong> Lumma Stealer is an infostealer — it silently harvests passwords, browser cookies, session tokens, API keys, cryptocurrency wallet credentials, 2FA extension data, and remote desktop configs from any machine it infects. It then sends everything home to the attacker's servers via encrypted HTTP POST requests, disguised as normal browser traffic.</p>
+      <p><strong>How it spreads:</strong> Fake Roblox scripts (👀 sound familiar?), pirated software, fake CAPTCHA pages, YouTube videos with malicious download links, Discord messages, phishing emails, and KMS activators for pirated Windows copies.</p>
+    </div>
+
+    <div class="score-card">
+      <div class="score-item">
+        <div class="score-number score-red">CRIT</div>
+        <div class="score-label">Severity Rating</div>
+      </div>
+      <div class="score-item">
+        <div class="score-number score-orange">369%</div>
+        <div class="score-label">Detection Growth H1→H2 2024</div>
+      </div>
+      <div class="score-item">
+        <div class="score-number score-green">394K</div>
+        <div class="score-label">Infected PCs (Mar–May 2025)</div>
+      </div>
+    </div>
+
+    <div class="big-stat-grid">
+      <div class="big-stat">
+        <span class="number">$250</span>
+        <span class="label">Starting price per month (anyone can buy this)</span>
+      </div>
+      <div class="big-stat">
+        <span class="number" style="color:var(--accent2);">$20K</span>
+        <span class="label">Top-tier license — includes full source code</span>
+      </div>
+      <div class="big-stat">
+        <span class="number" style="color:var(--accent3);">400+</span>
+        <span class="label">Active paying clients as of late 2023</span>
+      </div>
+      <div class="big-stat">
+        <span class="number">2,500</span>
+        <span class="label">Domains taken down by global law enforcement in 2025</span>
+      </div>
+    </div>
+
+    <p>In May 2025, the FBI, Europol, Microsoft, and a coalition of cybersecurity companies launched a coordinated takedown of Lumma's infrastructure — seizing over 2,300 domains and wiping its main servers. Lumma's creator complained on Telegram about it, then came back a month later with newer, stealthier infrastructure. He's still out there.</p>
+    <p>The version that hit the Context.ai employee did so in <strong>February 2026</strong> — nine months after that "takedown." Think about that next time someone tells you a malware operation has been "dismantled."</p>
+
+    <div class="callout callout-red">
+      <div class="callout-label">🎯 Where Lumma Stealer Has Been Used</div>
+      <p>Beyond Vercel/Context.ai: the Snowflake mega-breach (2024) affecting Ticketmaster, AT&T, and 163 others; ransomware campaigns by Scattered Spider (Octo Tempest); and countless smaller credential-theft operations targeting crypto users, SMBs, and enterprise employees worldwide. One log from a Lumma infection is <strong>nearly 3× larger</strong> than a log from competing infostealers — meaning it steals more, from more places, in a single hit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT COULD HAVE BEEN AVOIDED -->
+<section>
+  <div class="container">
+    <div class="section-label">The Painful Retrospective</div>
+    <h2>How This Could Have <span class="green">Been Avoided</span></h2>
+    <p>Here's the part where we avoid dunking on anyone, because the uncomfortable truth is that most companies — including very security-conscious ones — are vulnerable to exactly this scenario right now. But let's be honest about what the failure points were.</p>
+
+    <h3>❌ Failure #1 — Trusting a Third-Party App Without Vetting It</h3>
+    <p>A Vercel employee connected Context.ai to their Google Workspace account. Context.ai is a legitimate product. But the employee almost certainly had no visibility into what permissions they granted, how Context.ai stored those tokens, or what Context.ai's own security posture looked like. <strong>Your security is only as strong as your least-secure integration.</strong></p>
+
+    <h3>❌ Failure #2 — Context.ai Stored OAuth Tokens in AWS Without Sufficient Protection</h3>
+    <p>When the attacker breached Context.ai's AWS environment, they found OAuth tokens sitting there accessible. Long-lived, broadly-scoped OAuth tokens stored at rest are digital gold for attackers. If they'd been encrypted, rotated frequently, or scoped more narrowly, the blast radius would have been far smaller.</p>
+
+    <h3>❌ Failure #3 — Environment Variables Not Encrypted by Default</h3>
+    <p>Vercel had a "sensitive" flag for environment variables that encrypted them at rest. Anything not flagged as sensitive? Stored in plaintext. The attacker walked away with API keys, database URLs, and internal tokens because developers hadn't checked that one box. <em>Vercel has since changed the default to "sensitive" for all new variables.</em> Classic case of secure-by-default arriving one breach too late.</p>
+
+    <h3>❌ Failure #4 — Over-Permissive OAuth Scopes</h3>
+    <p>When the attacker used the stolen OAuth token, Vercel's internal OAuth configurations gave it broader permissions than it should have needed. The principle of least privilege — only grant the minimum access required — was not enforced. A token meant for one thing became a pass for everything.</p>
+
+    <h3>❌ Failure #5 — No Real-Time Monitoring of Third-Party Token Usage</h3>
+    <p>The breach was discovered through investigation, not real-time alerting. If anomalous OAuth token usage (weird IP, unusual time, unexpected API calls) had triggered an alert, the window of access could have been dramatically shortened.</p>
+
+    <div class="callout callout-green">
+      <div class="callout-label">✅ What Would Have Stopped This</div>
+      <p>MFA-protected OAuth with short token lifetimes + regular rotation. Rigorous third-party app security reviews before authorization. Encrypted environment variables by default. Narrow OAuth scopes. Real-time token usage monitoring. Any one of these significantly reduces the impact. All of them together? The attacker hits a wall.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY OF OAUTH BREACHES -->
+<section>
+  <div class="container">
+    <div class="section-label">It's Not New — It's a Pattern</div>
+    <h2>The <span class="orange">OAuth Hall</span> of Shame</h2>
+    <p>Here's the thing: Vercel isn't special. It's the latest in a long, embarrassing line of high-profile breaches where OAuth was the attack surface. The playbook has been the same for nearly a decade. Let's do the recap.</p>
+  </div>
+
+  <div class="container-wide">
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-badge badge-yellow">The Original Sin</div>
+        <div class="timeline-year">2017</div>
+        <div class="timeline-title">The Google Docs OAuth Worm</div>
+        <p class="timeline-body">A phishing campaign disguised as a Google Docs sharing link sent millions of people to a fake app that had literally named itself "Google Docs." Clicking Allow gave the app full Gmail and Contacts access. It then auto-sent itself to all your contacts. One million victims in under an hour. Google stopped it, but the blueprint was written.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="border-color:var(--accent2)"></div>
+        <div class="timeline-badge badge-orange">Redirect Abuse</div>
+        <div class="timeline-year">2018</div>
+        <div class="timeline-title">Facebook "Login with Facebook" Redirect Exploits</div>
+        <p class="timeline-body">Attackers chained misconfigured redirect URIs in Facebook's OAuth implementation to hijack tokens mid-flight and take over accounts on any third-party site using "Login with Facebook." The attack required no user action beyond logging in normally.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-badge badge-red">Rogue App Registration</div>
+        <div class="timeline-year">2020</div>
+        <div class="timeline-title">Microsoft Office 365 Consent Phishing</div>
+        <p class="timeline-body">Attackers registered fake Azure AD apps with names like "Microsoft Teams" and "Outlook Update," then tricked employees into clicking Allow on OAuth consent prompts. No password needed. Persistent access to email, files, and contacts — granted willingly by the victims themselves.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="border-color:var(--accent)"></div>
+        <div class="timeline-badge badge-red">Nation-State / Token Forgery</div>
+        <div class="timeline-year">2022–2023</div>
+        <div class="timeline-title">Storm-0558 — China Forges Microsoft OAuth Tokens</div>
+        <p class="timeline-body">A China-linked espionage group stole a Microsoft signing key from a crash dump (yes, really) and used it to forge OAuth tokens that passed validation as legitimate. They accessed 25 organizations including the US State Department, US Ambassador to China, and Commerce Secretary — downloading ~60,000 State Department emails over six weeks. The really terrifying part? The stolen key was meant for consumer accounts but worked on enterprise systems too, because Microsoft hadn't enforced the separation.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="border-color:var(--accent2)"></div>
+        <div class="timeline-badge badge-orange">No MFA = Free Access</div>
+        <div class="timeline-year">2024</div>
+        <div class="timeline-title">Snowflake — 165 Organizations, One Missing MFA Policy</div>
+        <p class="timeline-body">Infostealer malware (including early Lumma campaigns) harvested credentials and session tokens from employee machines. Those tokens gave direct access to corporate Snowflake databases — because Snowflake didn't enforce MFA at the platform level. Victims included Ticketmaster (560 million records), AT&T, Santander Bank, and 162 others. One of the largest data theft campaigns in history — all from tokens, not exploits.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="border-color:var(--accent3)"></div>
+        <div class="timeline-badge badge-green">SaaS Supply Chain</div>
+        <div class="timeline-year">August 2025</div>
+        <div class="timeline-title">Salesloft/Drift — 700+ Organizations via One Chatbot</div>
+        <p class="timeline-body">Attackers compromised Salesloft's GitHub repos, pivoted to AWS, and grabbed OAuth tokens that Salesloft's Drift chatbot held for its Salesforce integrations. Those tokens worked perfectly — no MFA challenged, no alarm raised. They ran targeted SOQL queries across 700+ organizations including Cloudflare, Zscaler, Palo Alto Networks, and PagerDuty, siphoning AWS keys, Snowflake tokens, and VPN credentials. The breach window: a stealthy 10 days.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="border-color:var(--accent)"></div>
+        <div class="timeline-badge badge-red">We Literally Just Talked About This</div>
+        <div class="timeline-year">April 2026</div>
+        <div class="timeline-title">Vercel / Context.ai — $2M Asking Price</div>
+        <p class="timeline-body">See above. Roblox script → Lumma Stealer → Context.ai AWS → OAuth tokens → Vercel Google Workspace → internal environment variables → BreachForums listing at $2M. The whole chain took a few months from initial infection to public disclosure.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SIMILARITIES -->
+<section>
+  <div class="container">
+    <div class="section-label">The Uncomfortable Pattern</div>
+    <h2>What Every Breach Has <span class="accent">in Common</span></h2>
+    <p>Look at these breaches side by side and one thing becomes unmistakably clear: attackers aren't breaking through walls. They're walking through doors we left open and handed them keys to.</p>
+
+    <table class="compare-table">
+      <tr>
+        <th>Breach</th>
+        <th>Entry Method</th>
+        <th>MFA Bypassed?</th>
+        <th>Victims</th>
+      </tr>
+      <tr>
+        <td>Google Docs Worm</td>
+        <td>Malicious OAuth consent</td>
+        <td>✅ Yes</td>
+        <td>~1M users</td>
+      </tr>
+      <tr>
+        <td>Storm-0558</td>
+        <td>Forged OAuth tokens</td>
+        <td>✅ Yes</td>
+        <td>25 orgs incl. US Gov</td>
+      </tr>
+      <tr>
+        <td>Snowflake</td>
+        <td>Stolen session tokens</td>
+        <td>✅ Yes (not enforced)</td>
+        <td>165 orgs</td>
+      </tr>
+      <tr>
+        <td>Salesloft/Drift</td>
+        <td>Stolen OAuth tokens via SaaS tool</td>
+        <td>✅ Yes</td>
+        <td>700+ orgs</td>
+      </tr>
+      <tr>
+        <td>Vercel</td>
+        <td>Stolen OAuth token via AI tool</td>
+        <td>✅ Yes</td>
+        <td>Limited subset (still TBD)</td>
+      </tr>
+    </table>
+
+    <div class="callout callout-red">
+      <div class="callout-label">🔑 The Core Problem</div>
+      <p>OAuth tokens <strong>completely bypass MFA</strong>. Once an attacker has your token, your second factor means nothing. Your password means nothing. Your security training means nothing. The token is the identity. And tokens — especially long-lived ones — are everywhere, in third-party apps your employees authorized on a Tuesday afternoon without a second thought.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO DO -->
+<section>
+  <div class="container">
+    <div class="section-label">The Action Plan</div>
+    <h2>What To Do <span class="green">Right Now</span></h2>
+    <p>Enough doom and gloom. Here's the practical stuff. Whether you're an individual developer or a CISO at a 10,000-person company, these steps apply to you. <em>Some of them you can do in the next 20 minutes.</em></p>
+
+    <h3>🧑‍💻 For Individuals</h3>
+    <ul class="checklist">
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Audit your connected apps — right now</span>
+          <span class="check-desc">Go to your Google Account → Security → Third-party apps. Do the same in GitHub, Slack, and Microsoft. Revoke anything you don't recognize or haven't used in 90 days. This takes 10 minutes and could save your company.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Never download cracked software, game exploit scripts, or "free" tools from sketchy sources</span>
+          <span class="check-desc">Yes, even Roblox stuff. Yes, even "just to try it." Lumma Stealer doesn't care how savvy you are — it just needs you to run it once.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Rotate your credentials after any suspected compromise</span>
+          <span class="check-desc">If your work machine ever ran sketchy software, assume your tokens are burned. Rotate API keys, revoke OAuth tokens, change passwords, and alert your security team.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Read OAuth consent screens before clicking Allow</span>
+          <span class="check-desc">If an app wants permission to "read and send email," "access all files," and "manage your calendar" just to show you a dashboard — that's suspicious. Least privilege applies to apps you authorize, not just ones you build.</span>
+        </div>
+      </li>
     </ul>
-    <h2>The Vercel Breach</h2>
-    <p>
-        In early 2023, Vercel experienced a security incident where attackers exploited a vulnerability in their OAuth implementation. The breach allowed unauthorized access to user accounts, leading to widespread concerns about the integrity of OAuth providers. Vercel has since implemented enhanced security measures to prevent similar incidents in the future.
-    </p>
-    <h2>Conclusion</h2>
-    <p>
-        As OAuth continues to evolve, it’s essential for developers and organizations to stay informed about potential risks and implement best practices to safeguard their applications. Awareness is key in mitigating OAuth-related vulnerabilities.
-    </p>
+
+    <h3>🏢 For Companies & Security Teams</h3>
+    <ul class="checklist">
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Inventory every OAuth integration in your environment</span>
+          <span class="check-desc">You cannot protect what you cannot see. Use tools like Nudge Security, Obsidian Security, or your IdP's connected apps dashboard to get a full picture of every app every employee has authorized. For most companies, this number is shockingly large.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Enforce short token lifetimes and mandatory rotation</span>
+          <span class="check-desc">Long-lived OAuth tokens are ticking time bombs. Enforce expiry policies. Rotate tokens regularly. If a token is stolen six months from now, it should already be invalid.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Apply the principle of least privilege to every OAuth scope</span>
+          <span class="check-desc">Your chatbot doesn't need read/write access to your entire Salesforce org. Your analytics tool doesn't need to send emails. Scope every OAuth grant to the minimum permissions required. Review and tighten existing grants.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Vet third-party AI tools before employees connect them</span>
+          <span class="check-desc">The AI tool explosion means employees are connecting dozens of new apps to their work accounts every month. Establish a review process. Require security assessments for any tool that touches production credentials or sensitive data.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Encrypt all secrets and credentials at rest — by default</span>
+          <span class="check-desc">Don't make encryption opt-in. Don't leave it up to developers to remember to check a box. Default everything to encrypted. If Vercel had done this from the start, the attacker would have walked away with much less.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Monitor OAuth token usage for anomalies in real time</span>
+          <span class="check-desc">Unusual IP addresses, access outside of business hours, unexpected API calls from authorized tokens — these are signals. Build alerting around them. The Salesloft breach was only discovered after 10 days. Real-time monitoring could have cut that to minutes.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Deploy endpoint protection that detects infostealer behaviour</span>
+          <span class="check-desc">Lumma Stealer isn't magic — it has known behavioural signatures. Modern EDR tools can catch it. But only if they're installed, updated, and actually covering employee devices — including personal devices used for work.</span>
+        </div>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <div>
+          <span class="check-title">Have a token revocation and incident response playbook ready</span>
+          <span class="check-desc">When (not if) a token is stolen, how fast can you revoke it? Do you know which tokens an employee has issued? Do you have a runbook for mass credential rotation? Build this before you need it.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="callout callout-yellow">
+      <div class="callout-label">💡 The Quick Wins Checklist</div>
+      <p>If you do nothing else today: <strong>(1)</strong> Check Google/GitHub/Slack connected apps and revoke old ones. <strong>(2)</strong> Check if your team uses Vercel — rotate all environment variable secrets. <strong>(3)</strong> Search your Google Workspace admin console for the compromised Context.ai app ID: <code style="color:var(--accent3); font-family:'DM Mono',monospace; font-size:12px;">110671459871-30f1spbu0hptbs60cb4vsmv79i7bbvqj.apps.googleusercontent.com</code> — revoke it if present. <strong>(4)</strong> Send this article to your security team. You're welcome.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section>
+  <div class="container">
+    <div class="cta-section">
+      <div class="section-label" style="justify-content:center; display:flex;">The Takeaway</div>
+      <h2>OAuth Isn't <span class="accent">Broken.</span><br>We're Just Using It <span class="orange">Badly.</span></h2>
+      <p>OAuth itself is a perfectly reasonable protocol. The problem is the ecosystem we've built around it — a sprawling, largely invisible web of third-party integrations, AI tools, chatbots, and SaaS products, all holding live tokens to your most sensitive systems, with minimal oversight and maximum trust.</p>
+      <p>The Vercel breach didn't happen because some elite hacker outsmarted a brilliant security team. It happened because one employee downloaded a bad file, one company stored tokens without enough protection, and one platform didn't encrypt secrets by default. <strong>Boring failures. Catastrophic consequences.</strong></p>
+      <p>The good news: boring failures are fixable. Start with your OAuth audit. Do it today. Because somewhere out there, there's another Lumma Stealer log with credentials from someone in your company — and the attacker just hasn't decided what to do with it yet.</p>
+      <div style="margin-top:32px; font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); letter-spacing:2px;">
+        STAY PARANOID. STAY PATCHED. REVOKE UNUSED TOKENS.
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Researched &amp; written April 2026 &nbsp;·&nbsp; Based on publicly disclosed security bulletins from Vercel, Context.ai, Microsoft, Trend Micro, Bleeping Computer, Hacker News, and others &nbsp;·&nbsp; Not legal or security advice — please consult your security team</div>
+</footer>
+
 </body>
 </html>
